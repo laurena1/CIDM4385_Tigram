@@ -121,6 +121,27 @@ function processACSPhotos(model, method, options) {
 	}
 }
 
+
+function processACSUsers(model, method, options) {
+	switch (method) {
+		case "update":
+			var params = model.toJSON();
+			Cloud.Users.update(params, function(e) 
+				{
+					if (e.success) {
+						model.meta = e.meta;
+						options.success && options.success(e.users[0]);
+						model.trigger("fetch");
+					} else {
+						Ti.API.error("Cloud.Users.update " + e.message);
+						options.error && options.error(e.error && e.message || e);
+					}
+				}
+			);
+      		break;
+      	}
+      }
+
 var _ = require("alloy/underscore")._;
 
 module.exports.sync = Sync;

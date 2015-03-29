@@ -48,3 +48,56 @@ user.login("cidm4385_tigram_admin", "cidm4385", function(_response) {
 	}
 });
 
+if (user.authenticated() === true) {
+	$.userLoggedInAction();
+} else {
+	$.userNotLoggedInAction();
+}
+
+$.userLoggedInAction = function() {
+	user.showMe(function(_response) {
+		if (_response.success === true) {
+			$.loginSuccessAction(_response);
+		} else {
+			alert("Application Error\n " + _response.error.message);
+			Ti.API.error(JSON.stringify(_response.error, null, 2));
+
+			$.userNotLoggedInAction();
+		}
+	});
+};
+
+$.loginSuccessAction = function(_options) {
+
+	Ti.API.info('logged in user information');
+	Ti.API.info(JSON.stringify(_options.model, null, 2));
+
+	$.tabGroup.open();
+
+	$.tabGroup.setActiveTab(0);
+
+	$.feedController.initialize();
+
+	Alloy.Globals.currentUser = _options.model;
+
+	$.feedController.parentController = $;
+	$.friendsController.parentController = $;
+	$.settingsController.parentController = $;
+
+	$.loginController && $.loginController.close();
+};
+
+$.userNotLoggedInAction = function() {
+	if (!$.loginController) {
+		var loginController = Alloy.createController("login", {
+			parentController : $,
+			reset : true
+		});
+
+		$.loginController = loginController;
+	}
+
+	$.loginController.open(true);
+
+};
+
