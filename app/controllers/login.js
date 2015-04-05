@@ -25,7 +25,7 @@ Alloy.Globals.loggedIn = false;
 });
 };
 
-
+//this is a utility method we reuse between the results of logging in or the results of creating a new user for the application
 function userActionResponseHandler(_resp) {
 	if (_resp.success === true) {
 
@@ -41,7 +41,7 @@ function userActionResponseHandler(_resp) {
 		Alloy.Globals.loggedIn = false;
 	}
 };
-
+//here we are creating the doCreateAcctBtnClicked method
 function doCreateAcctBtnClicked() {
 	if ($.acct_password.value !== $.acct_password_confirmation.value) {
 		alert("Please re-enter information");

@@ -1,81 +1,100 @@
 exports.definition = {
-	config : {
+	config: {
 
-		adapter : {
-			type : "acs",
-			collection_name : "users"
+		adapter: {
+			type: "acs",
+			collection_name: "users"
 		}
 	},
-	extendModel : function(Model) {
-		_.extend(Model.prototype, {
-
-			login : function(_login, _password, _callback) {
+	extendModel: function(Model) {
+		_.extend(Model.prototype, 
+		{
+		
+			login: function(_login, _password, _callback)
+			{
 				var self = this;
-				this.config.Cloud.Users.login({
-					login : _login,
-					password : _password,
-				}, function(e) {
-					if (e.success) {
-						var user = e.users[0];
-
-						Ti.App.Properties.setString('sessionId', e.meta.session_id);
-						Ti.App.Properties.setString('user', JSON.stringify(user));
-
-						_callback && _callback({
-							success : true,
-							model : new model(user)
-						});
-					} else {
-						Ti.API.error(e);
-						_callback && _callback({
-							success : false,
-							model : null,
-							error : e
-						});
+				this.config.Cloud.Users.login(
+					
+					{
+						login: _login,
+						password: _password,
+					}, function(e)
+					{
+						if(e.success){
+							var user = e.users[0];
+							
+							
+							Ti.App.Properties.setString('sessionId', e.meta.session_id);
+							Ti.App.Properties.setString('user', JSON.stringify(user));
+							
+							
+							_callback && _callback(
+								{
+									success : true,
+									model: new model(user)
+								}
+							);
+						} else {
+							Ti.API.error(e);
+							_callback && _callback(
+								{
+									success: false,
+									model: null,
+									error: e
+								}
+							);						
+						}
 					}
-				});
-			}
-		});
+				);
+			}, 
 
-		return Model;
-	},
-
-	createAccount : function(_ucerInfo, _callback) {
-		var cloud = this.config.Cloud;
-		var TAP = Ti.App.Properties;
-
-		if (!_userInfo) {
-			_callback && _callback({
-				success : false,
-				model : null
-			});
-		} else {
-
-			cloud.Users.create(_userInfo, function(e) {
-				if (e.success) {
-					var user = e.users[0];
-					TAP.setString("sessionId", e.meta.session_id);
-					TAP.setString("user", JSON.stringify(user));
-
-					cloud.sessionId = e.meta.session_id;
-
-					_callback && callback({
-						success : true,
-						model : new model(user)
-					});
+			
+			createAccount: function(_ucerInfo, _callback)
+			{
+				var cloud = this.config.Cloud;
+				var TAP = Ti.App.Properties;
+				
+				if(!_userInfo)
+				{
+					_callback && _callback(
+						{
+							success: false,
+							model: null
+						}
+					);
 				} else {
-					Ti.API.error(e);
-					__callback && _callback({
-						success : false,
-						model : null,
-						error : e
+					
+					cloud.Users.create(_userInfo, function(e){
+						if(e.success)
+						{
+							var user = e.users[0];
+							TAP.setString("sessionId", e.meta.session_id);
+							TAP.setString("user", JSON.stringify(user));
+							
+							cloud.sessionId = e.meta.session_id;
+							
+							_callback && callback(
+								{
+									success: true,
+									model: new model(user)
+								}
+							);
+						} else {
+							//no bueno
+							Ti.API.error(e);
+							__callback && _callback(
+								{
+									success: false,
+									model: null,
+									error: e
+								}
+							);
+						}
 					});
 				}
-			});
-		}
-	},
-
-logout: function(_callback)
+			}, 
+					
+			logout: function(_callback)
 			{
 				var cloud = this.config.Cloud;
 				var TAP = Ti.App.Properties;
@@ -96,6 +115,7 @@ logout: function(_callback)
 								}
 							);
 						} else {
+							
 							Ti.API.error(e);
 							
 							_callback && _callback(
@@ -108,7 +128,7 @@ logout: function(_callback)
 						}
 					}
 				);
-			}, 
+			},
 			
 			
 			authenticated: function()
@@ -116,14 +136,17 @@ logout: function(_callback)
 				var cloud = this.config.Cloud;
 				var TAP = Ti.App.Properties;
 				
-				if(TAP.hasPropert("sessionId")){
+				
+				if(TAP.hasProperty("sessionId")){
 					Ti.API.info("SESSION ID: " + TAP.getString("SessionId"));
 					cloud.sessionId = TAP.getString("SessionId");
 					return true;
 				}
 				
+				
 				return false;
 			},
+			
 			
 			showMe: function(_callback)
 			{
@@ -134,10 +157,13 @@ logout: function(_callback)
 					{
 						if(e.success)
 						{
+							
 							var user = e.users[0];
+							
 							
 							TAP.setString("sessionId", e.meta.session_id);
 							TAP.setString("user", JSON.stringify(user));
+							
 							
 							_callback && _callback(
 								{
@@ -146,11 +172,12 @@ logout: function(_callback)
 								}
 							);
 						} else {
-							
+						
 							Ti.App.error(e);
 							
 							TAP.removeProperty("sessionId");
 							TAP.removeProperty("user");
+							
 							
 							_callback && _callback(
 								{
@@ -162,10 +189,9 @@ logout: function(_callback)
 						}
 					}
 				);
-			}, 
-		};
+			},
 		
-updateFacebookLoginStatus : function(_accessToken, _opts) {
+			updateFacebookLoginStatus : function(_accessToken, _opts) {
 				
 				var cloud = this.config.Cloud;
 				var TAP = Ti.App.Properties;
@@ -191,6 +217,7 @@ updateFacebookLoginStatus : function(_accessToken, _opts) {
         					var user = e.users[0];
         					TAP.setString("sessionId", e.meta.session_id);
         					TAP.setString("user", JSON.stringify(user));
+        					
         					TAP.setString("loginType", "FACEBOOK");
         					
         					_opts.success && _opts.success(
@@ -201,6 +228,7 @@ updateFacebookLoginStatus : function(_accessToken, _opts) {
         						}
         					);
           				} else {
+          					//no bueno
           					Ti.API.error(e);
           					_opts.error && _opts.error(
           						{
@@ -212,11 +240,13 @@ updateFacebookLoginStatus : function(_accessToken, _opts) {
           				}
           			}
           		);
-      		}		
+      		},			
 			
-		
-	
-extendCollection: function(Collection) {
+		});
+
+		return Model;
+	},
+	extendCollection: function(Collection) {
 		_.extend(Collection.prototype, {
 		});
 
