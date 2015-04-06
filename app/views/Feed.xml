@@ -3,8 +3,25 @@
 		<Window id="feedWindow" title="Feed">
 			<RightNavButton platform="ios">
 				<Button id="cameraButton">Camera</Button>
+				<Button id="locationButton">Location</Button>
 			</RightNavButton>
 			<TableView id="feedTable"></TableView>
+			<View id="filterContainer">
+				<TabbedBar id= "filter" platform="ios">
+					<Labels>
+						<Label>List</Label>
+						<Label>Map</Label>
+						</Labels>
+						</TabbedBar>
+						<View id="androidPickerContainer" platform="android">
+							<Picker id="filter" selectionIndicator="true">
+								<PickerColumn id="column1">
+									<PickerRow title="List"/>
+									<PickerRow= title"Map"/>
+									</PickerColumn>
+										</Picker>
+										</View>
+										</View>
 		</Window>
 	</Tab>
 </Alloy>
