@@ -4,6 +4,9 @@
     <property name="acs-api-key-development" type="string">bk6E8jLLw3aspatLEkuHNKAhAC0gZiFB</property>
      <property name="ti.facebook.appid">FACEBOOK_APP_ID</property>
      <property name="ti.facebook.appid">976756752335475</property>
+     <property name="twitter.consumerKey">MyPhoneNumberIsAlreadyInUseByAnotherUser</poperty>
+     <property name="twitter.consumerSecret">MyPhoneNumberIsAlreadyInUseByAnotherUser</poperty>
+     
     <id>com.CIDM4385_Tigram</id>
     <name>CIDM4385_Tigram</name>
     <version>1.0</version>

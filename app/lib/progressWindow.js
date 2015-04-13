@@ -2,18 +2,11 @@ var activityIndicator,
     showingIndicator,
     activityIndicatorWindow,
     progressTimeout;
-var progressIndicator = null;
-
-
 var androidContainer = null;
 
 exports.showIndicator = function(_messageString, _progressBar) {
-	
-
-	Ti.API.info('showIndicator: ' + _messageString);
 
 	if (OS_ANDROID) {
-		
 		androidContainer = Ti.UI.createView({
 			top : "200dp",
 			width : Ti.UI.FILL,
@@ -25,7 +18,6 @@ exports.showIndicator = function(_messageString, _progressBar) {
 		});
 	}
 
-
 	activityIndicatorWindow = Titanium.UI.createWindow({
 		top : 0,
 		left : 0,
@@ -36,12 +28,9 @@ exports.showIndicator = function(_messageString, _progressBar) {
 		fullscreen : true
 	});
 
-	
 	if (_progressBar === true) {
-		
 		activityIndicator = Ti.UI.createProgressBar({
-			
-			style : OS_IOS ? Titanium.UI.iPhone.ProgressBarStyle.DARK : Ti.UI.ActivityIndicatorStyle.DARK, 
+			style : OS_IOS && Titanium.UI.iPhone.ProgressBarStyle.PLAIN,
 			top : ( OS_IOS ? "200dp" : '10dp'),
 			bottom : ( OS_ANDROID ? '10dp' : undefined),
 			left : "30dp",
@@ -59,8 +48,6 @@ exports.showIndicator = function(_messageString, _progressBar) {
 			backgroundColor : ( OS_ANDROID ? 'black' : 'transparent')
 		});
 	} else {
-		
-
 		activityIndicator = Ti.UI.createActivityIndicator({
 			style : OS_IOS ? Ti.UI.iPhone.ActivityIndicatorStyle.BIG : Ti.UI.ActivityIndicatorStyle.BIG,
 			top : "10dp",
@@ -73,12 +60,10 @@ exports.showIndicator = function(_messageString, _progressBar) {
 				fontSize : '20dp',
 				fontWeight : "bold"
 			},
-			
 		});
 	}
 
 	if (OS_ANDROID) {
-		
 		androidContainer.add(activityIndicator);
 		activityIndicatorWindow.add(androidContainer);
 		activityIndicatorWindow.open();
@@ -86,13 +71,10 @@ exports.showIndicator = function(_messageString, _progressBar) {
 		activityIndicatorWindow.add(activityIndicator);
 		activityIndicatorWindow.open();
 	}
-	
-	
+
 	activityIndicator.show();
-	
 	showingIndicator = true;
 
-	
 	progressTimeout = setTimeout(function() {
 		exports.hideIndicator();
 	}, 35000);
@@ -102,18 +84,13 @@ exports.setProgressValue = function(_value) {
 	activityIndicator && activityIndicator.setValue(_value);
 };
 
-
 exports.hideIndicator = function() {
 
-	
 	if (progressTimeout) {
-		
 		clearTimeout(progressTimeout);
-		
 		progressTimeout = null;
 	}
 
-	Ti.API.info("hideIndicator");
 	if (!showingIndicator) {
 		return;
 	}
@@ -125,13 +102,11 @@ exports.hideIndicator = function() {
 		activityIndicatorWindow.remove(androidContainer);
 		androidContainer = null;
 	} else {
-	
 		activityIndicator && activityIndicatorWindow.remove(activityIndicator);
 	}
-		
 	activityIndicatorWindow.close();
 	activityIndicatorWindow = null;
 
 	showingIndicator = false;
 	activityIndicator = null;
-}; 
+};
