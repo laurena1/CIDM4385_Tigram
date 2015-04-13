@@ -1,13 +1,32 @@
-var comments = Alloy.Collections.instance("Comment");
-
 var parameters = arguments[0] || {};
 var currentPhoto = parameters.photo || {};
-var parentController = parameters.parentController ||{};
+var parentController = parameters.parentController || {};
+var comments = Alloy.Collections.instance("Comment");
 
-OS_IOS && $.newComentButton.addEventListener("click", handleNewCommentButtonClicked);
+var push = require('pushNotifications');
+
+OS_IOS && $.newCommentButton.addEventListener("click", handleNewCommentButtonClicked);
+
 OS_IOS && $.commentTable.addEventListener("delete", handleDeleteRow);
 OS_ANDROID && $.commentTable.addEventListener("longpress", handleDeleteRow);
 $.commentTable.editable = true;
+
+function deleteComment(_comment) {
+	_comment.destroy({
+		data : {
+			photo_id : currentPhoto.id,
+			id : _comment.id
+		},
+		success : function(_model, _response) {
+			loadComments(null);
+		},
+		error : function(_e) {
+			Ti.API.error('error: ' + _e.message);
+			alert("Error deleteing comment");
+			loadComments(null);
+		}
+	});
+}
 
 function handleDeleteRow(_event) {
 	var collection = Alloy.Collections.instance("Comment");
@@ -37,91 +56,6 @@ function handleDeleteRow(_event) {
 	}
 }
 
-function deleteComment(_comment) {
-	_comment.destroy({
-		data : {
-			photo_id : currentPhoto.id, // comment on
-			id : _comment.id // id of the comment object
-		},
-		success : function(_model, _response) {
-			loadComments(null);
-		},
-		error : function(_e) {
-			Ti.API.error('error: ' + _e.message);
-			alert("Error deleteing comment");
-			loadComments(null);
-		}
-	});
-}
-
-
-
-function loadComments (_photo_id) {
-	var params = {
-		photo_id : currentPhoto.id,
-		order : '-created_at',
-		per_page : 100
-};
-
-	var rows = [];	
-
-	comments.fetch({
-		data : params,
-		success : function(model, response) {
-			comments.each(function(comment) {
-				var commentRow = Alloy.createController("commentRow", comment);
-				rows.push(commentRow.getView());
-			});
-			
-			$.commentTable.data = rows;
-		},
-		error : function(error) {
-			alert('Error loading comments ' + e.message);
-			Ti.API.error(JSON.stringify(error));
-		}
-	});
-}
-
-$.initialize = function() {
-	loadComments();
-};
-
-
-
-function doOpen()
-{
-	if(OS_ANDROID)
-	{
-		var activity = $.getView().activity;
-		var actionBar = activity.actionBar;
-		
-		activity.onCreateOptionsMenu = function(_event){
-			if(actionBar)
-			{
-				actionBar.displayHomeAsUp = true;
-				actionBar.onHomeIconSelected = function(){
-					$.getView().close();
-				};
-			}
-			else{
-				alert("No Action Bar Found");
-			}
-		};
-	
-		var menuItem = _event.menu.add(
-			{
-				title: "New Comment",
-				showAsAction: Ti.Android.SHOW_AS_ACTION_ALWAYS,
-				icon: Ti.Android.R.drawable.ic_menu_edit
-			}
-		);
-		
-		menuItem.addEventListener("click", function(e){
-			handleNewCommentButtonClicked();
-		});
-	}
-}
-
 function inputCallback(_event) {
 	if (_event.success) {
 		addComment(_event.content);
@@ -130,10 +64,8 @@ function inputCallback(_event) {
 	}
 }
 
-
 function handleNewCommentButtonClicked(_event) {
 	var navWin;
-	
 	var inputController = Alloy.createController("commentInput", {
 		photo : currentPhoto,
 		parentController : $,
@@ -159,7 +91,6 @@ function addComment(_content) {
 			Ti.API.debug('success: ' + _model.toJSON());
 			var row = Alloy.createController("commentRow", _model);
 
-			
 			if ($.commentTable.getData().length === 0) {
 				$.commentTable.setData([]);
 				$.commentTable.appendRow(row.getView(), true);
@@ -175,3 +106,85 @@ function addComment(_content) {
 		}
 	});
 };
+
+function notifyFollowers(_model, _photo, _message) {
+	var currentUser = Alloy.Globals.currentUser;
+
+	push.sendPush({
+		payload : {
+			custom : {
+				from : currentUser.get("id"),
+				commentedOn : _photo.id,
+				commentedId : _model.id,
+			},
+			sound : "default",
+			alert : _message + " " + currentUser.get("email")
+		},
+		to_ids : _photo.get("user").id
+	}, function(_repsonsePush) {
+		if (_repsonsePush.success) {
+			alert("Notified user of new comment");
+		} else {
+			alert("Error notifying user of new comment");
+		}
+
+	});
+}
+
+function loadComments(_photo_id) {
+	var rows = [];
+	var params = {
+		photo_id : currentPhoto.id,
+		order : '-created_at',
+		per_page : 100
+	};
+
+	comments.fetch({
+		data : params,
+		success : function(model, response) {
+			comments.each(function(comment) {
+				var commentRow = Alloy.createController("commentRow", comment);
+				rows.push(commentRow.getView());
+			});
+			$.commentTable.data = rows;
+		},
+		error : function(error) {
+			alert('Error loading comments ' + e.message);
+			Ti.API.error(JSON.stringify(error));
+		}
+	});
+
+}
+
+function doOpen() {
+	if (OS_ANDROID) {
+		var activity = $.getView().activity;
+		var actionBar = activity.actionBar;
+
+		activity.onCreateOptionsMenu = function(_event) {
+
+			if (actionBar) {
+				actionBar.displayHomeAsUp = true;
+				actionBar.onHomeIconItemSelected = function() {
+					$.getView().close();
+				};
+			} else {
+				alert("No Action Bar Found");
+			}
+
+			var menuItem = _event.menu.add({
+				title : "New Comment",
+				showAsAction : Ti.Android.SHOW_AS_ACTION_ALWAYS,
+				icon : Ti.Android.R.drawable.ic_menu_edit
+			});
+
+			menuItem.addEventListener("click", function(e) {
+				handleNewCommentButtonClicked();
+			});
+		};
+	}
+};
+
+$.initialize = function() {
+	loadComments();
+}; 
